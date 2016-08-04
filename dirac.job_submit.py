@@ -117,9 +117,7 @@ for input_file in input_files:
 
     id = str(jobID) + "\n"
 
-    f_id_log = open('jobids.list', 'a')
-    f_id_log.write(id)
-    f_id_log.close()
-
+    with open('jobids.list', 'a') as f_id_log:
+        f_id_log.write(jobID.Value + '\n')
 
 
