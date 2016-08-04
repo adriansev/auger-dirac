@@ -21,7 +21,8 @@ if (len(sys.argv) > 2):
 id_list_file = open(list, 'r')
 
 for line in id_list_file:
-    line = line.strip().decode("utf-8").replace("True","true").replace("False","false")
+##    line = line.strip().decode("utf-8").replace("True","true").replace("False","false")
+    line = line.replace("True","true").replace("False","false")
     line = line.replace("'","\"")
     j = json.loads(line)
 
