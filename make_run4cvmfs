@@ -1,0 +1,26 @@
+#!/bin/bash
+
+filename=$1
+CURDIR=$PWD
+tmpf="execsim"
+
+## PREPARE THE SIM EXECUTION SCRIPT
+CORSIKAVER_DEFAULT="CORSIKA-74100_Fluka.2011.2c.2"
+CORSIKABIN_DEFAULT="corsika74100Linux_QGSII_fluka_thin"
+
+CORSIKAVER=${2:-$CORSIKAVER_DEFAULT}
+CORSIKABIN=${3:-$CORSIKABIN_DEFAULT}
+
+## creating simulation script
+echo '#!/bin/bash' > $tmpf
+echo 'ulimit -Sc 0' >> $tmpf
+echo "export FLUPRO=/cvmfs/auger.egi.eu/${CORSIKAVER}/fluka" >> $tmpf
+echo "export CORSIKARUN=/cvmfs/auger.egi.eu/${CORSIKAVER}/run" >> $tmpf
+echo 'cd $CORSIKARUN' >> $tmpf
+echo "./${CORSIKABIN} < ${CURDIR}/${filename} > ${CURDIR}/${filename}.log 2>&1" >> $tmpf
+
+chmod +x ${tmpf}
+
+## MODIFY THE DIRECT LINE OF INP FILE
+sed -i "s#^DIRECT.*#DIRECT  $CURDIR/#" ${filename}
+
