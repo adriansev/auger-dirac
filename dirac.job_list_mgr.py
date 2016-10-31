@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import re,sys,json
 from StringIO import StringIO
 
