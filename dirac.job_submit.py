@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import os,re,sys,argparse
 
 from DIRAC.Core.Base import Script
@@ -96,13 +98,13 @@ for input_file in input_files:
     j.setCPUTime(345600) ## 4 days
 
     ## download the script for preparing corsika input file for usage with cvmfs
-    j.setExecutable( 'curl', arguments = ' -fsSLkO http://issaf.spacescience.ro/adrian/AUGER/make_run4cvmfs',logFile='cmd_logs.log')
-    j.setExecutable( 'chmod', arguments = ' +x make_run4cvmfs',logFile='cmd_logs.log')
+##    j.setExecutable( 'curl', arguments = ' -fsSLkO http://issaf.spacescience.ro/adrian/AUGER/make_run4cvmfs',logFile='cmd_logs.log')
+##    j.setExecutable( 'chmod', arguments = ' +x make_run4cvmfs',logFile='cmd_logs.log')
 
     ## create the simulation script configured for use with cvmfs
     ## set the make_run4cvmfs arguments to include the corsika_version and corsika_bin
     make_run4cvmfs_arg = input_file_base + " " + corsika_version + " " + corsika_bin
-    j.setExecutable( './make_run4cvmfs', arguments = make_run4cvmfs_arg, logFile='cmd_logs.log')
+    j.setExecutable( '/cvmfs/auger.egi.eu/utils/make_run4cvmfs', arguments = make_run4cvmfs_arg, logFile='cmd_logs.log')
 
     ## run simulation
     j.setExecutable( './execsim',logFile='cmd_logs.log')
