@@ -142,7 +142,7 @@ for input_file in input_files:
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    outdir = path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
+    outdir = "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr) + "/" + path
     print outdir
 
     ### ALWAYS, INFO, VERBOSE, WARN, DEBUG
@@ -167,6 +167,10 @@ for input_file in input_files:
 
     ###j.setOutputSandbox(output_files)
     j.setOutputData(output_files, outputSE=se, outputPath=outdir)
+
+    print output_files
+    print se
+    print outdir
 
     #j.runLocal()  ## test local
 
