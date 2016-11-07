@@ -17,6 +17,8 @@ corsika_bin = "corsika74100Linux_QGSII_fluka_thin"
 se_dpm1    = "dpm1.egee.cesnet.cz"
 se_dirac1  = "CESNET-disk"
 
+se = se_dirac1
+
 site_lcg = "prague_cesnet_lcg2"
 site_dirac = "LCG.CESNET.cz"
 
