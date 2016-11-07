@@ -63,22 +63,8 @@ input_files = full_file_paths
 
 
 ## root dir for job output storage
-base_dir_dirac = "/auger/user/a/asevcenc/"
-base_dir_lfc = "/grid/auger/user/asevcenc/"
-
-grid_basedir_output = ""
-site = ""
-se = ""
-
-if ( USE_DIRAC_CE_SE == 1 ) :
-    grid_basedir_output = base_dir_dirac
-    site = site_dirac
-    se = se_dirac1
-else :
-    grid_basedir_output = base_dir_lfc
-    se = se_dpm1
-    site = site_lcg
-
+# base_dir_dirac = "/auger/user/a/asevcenc/"
+# base_dir_lfc = "/grid/auger/user/asevcenc/"
 
 ##  MAIN LOOP OVER ALL INPUT FILES
 for input_file in input_files:
@@ -142,14 +128,13 @@ for input_file in input_files:
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    outdir = "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr) + "/" + path
+    outdir = "/" + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
     print outdir
 
     ### ALWAYS, INFO, VERBOSE, WARN, DEBUG
     j.setLogLevel('debug')
 
-    #j.setDestination(site)
-    j.setDestinationCE(ce1)
+    j.setDestination(site_dirac)
     j.setName('AUGER test simulation')
     j.setCPUTime(345600) ## 4 days
 
