@@ -1,10 +1,23 @@
 #!/bin/env python
+import os,re,sys,argparse
+
+from DIRAC.Core.Base import Script
+Script.parseCommandLine()
+
+from DIRAC.Interfaces.API.Job import Job
+from DIRAC.Interfaces.API.Dirac import Dirac
 
 ##################################
 ###   STEERING VARIABLES
 ##################################
 
+TEST_JOB = False
+
 USE_DIRAC_CE_SE = 0
+
+JOB_CPUTIME = 345600
+
+JOB_NAME = 'AUGER test simulation'
 
 ##################################
 ##################################
@@ -14,32 +27,30 @@ corsika_version = "CORSIKA-74100_Fluka.2011.2c.2"
 corsika_bin = "corsika74100Linux_QGSII_fluka_thin"
 
 ## Variable definitions
-se_dpm1    = "dpm1.egee.cesnet.cz"
-se_dirac1  = "CESNET-disk"
-
-se = se_dirac1
-
-site_lcg = "prague_cesnet_lcg2"
-site_dirac = "LCG.CESNET.cz"
-
 ce1 = "cream1.grid.cesnet.cz"
 ce2 = "cream2.grid.cesnet.cz"
 ce3 = "cream1.farm.particle.cz"
 
+se_dpm1    = "dpm1.egee.cesnet.cz"
+se_dirac_cesnet  = "CESNET-disk"
+se_dirac_iss = "ROISS-disk"
+
+site_lcg = "prague_cesnet_lcg2"
+site_dirac_cesnet = "LCG.CESNET.cz"
+site_dirac_iss = "LCG.ROISS.ro"
+
+##################################
+# DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
+se = se_dirac_iss
+site_dirac = site_dirac_iss
+
 ########################################################################################
 ########################################################################################
-import os,re,sys,argparse
-
-from DIRAC.Core.Base import Script
-Script.parseCommandLine()
-
-from DIRAC.Interfaces.API.Job import Job
-from DIRAC.Interfaces.API.Dirac import Dirac
-
-
+## CREATE LIST OF CORSIKA INPUT FILES
 def get_filepaths(directory):
     file_paths = []  # List which will store all of the full filepaths.
     for root, directories, files in os.walk(directory):     # Walk the tree.
+        files.sort()
         for filename in files:
             root = os.path.realpath(root)   ## get full path of the argument dir
             filepath = os.path.join(root, filename)  # Join the two strings in order to form the full filepath.
@@ -49,27 +60,42 @@ def get_filepaths(directory):
 ######################################
 ##     BEGIN VARIABLES SETUP
 ######################################
-
-## path="simulation_run_test_tag_XYZ_v3"
+arg2 = 0
+arg3 = 0
 
 if (len(sys.argv) < 2) :
     print ('the input directory should be specified')
+    print ('if existent the 2nd argument (int) will be taken as index of the first job (inclusive)')
+    print ('if existent the 3rd argument (int) will be taken as index of the last job (inclusive)')
     sys.exit(os.EX_USAGE)
 
 path = sys.argv[1]
-print ("Input directory: '{0}'".format(path))
-##############################################################
 
+print ("Input directory: '{0}'".format(path))
+
+##############################################################
 full_file_paths = get_filepaths(path)
 input_files = full_file_paths
 
+## read the args for job range
+if (len(sys.argv) == 3) : arg2 = sys.argv[2]
 
-## root dir for job output storage
-# base_dir_dirac = "/auger/user/a/asevcenc/"
-# base_dir_lfc = "/grid/auger/user/asevcenc/"
+if (len(sys.argv) == 4) :
+    arg2 = sys.argv[2]
+    arg3 = sys.argv[3]
+    if (arg3 < arg2) :
+        # protection in case that last nindex in range is lower than the first
+        print ('WARNING !!!! :: second element in range smaller than the end element of range! setting arg3 = arg2 + 1')
+        arg3 = arg2 + 1
+
+first_job = 1
+last_job = len(full_file_paths)
+
+if (arg2 > 0) : first_job = arg2
+if (arg3 > 0) : last_job = arg3
 
 ##  MAIN LOOP OVER ALL INPUT FILES
-for input_file in input_files:
+for input_file in input_files[int(first_job):int(last_job)]:
 #    print "Input file is : {}".format(input_file)
     print '\nInput file is : ', input_file
 
@@ -81,8 +107,9 @@ for input_file in input_files:
     theta_min = -1
     theta_max = -1
     prmpar = -999
-
     nr_line = 0
+
+    # READ VARIABLES FOR CORSIKA INPUT FILE FOR DETERMINATION OF OUTPUT PATH
     for line in f:
         nr_line += 1
         line = line.strip()
@@ -97,7 +124,6 @@ for input_file in input_files:
         if ( columns[0] == "THETAP" ) :
             theta_min = columns[1]
             theta_max = columns[2]
-
 
     f.close()
 
@@ -137,11 +163,11 @@ for input_file in input_files:
     j.setLogLevel('debug')
 
     j.setDestination(site_dirac)
-    j.setName('AUGER test simulation')
-    j.setCPUTime(345600) ## 4 days
+    j.setName(JOB_NAME)
+    j.setCPUTime(JOB_CPUTIME) ## 4 days
 
     ### download the script for preparing corsika input file for usage with cvmfs
-###    j.setExecutable( 'curl', arguments = ' -fsSLkO http://issaf.spacescience.ro/adrian/AUGER/make_run4cvmfs',logFile='cmd_logs.log')
+###    j.setExecutable( 'curl', arguments = ' -fsSLkO https://raw.githubusercontent.com/adriansev/auger-dirac/master/make_run4cvmfs',logFile='cmd_logs.log')
 ###    j.setExecutable( 'chmod', arguments = ' +x make_run4cvmfs',logFile='cmd_logs.log')
 
     ### create the simulation script configured for use with cvmfs
@@ -156,10 +182,11 @@ for input_file in input_files:
     j.setOutputData(output_files, outputSE=se, outputPath=outdir)
 
     print output_files
-    print se
     print outdir
+    print site_dirac
+    print se
 
-    #j.runLocal()  ## test local
+    if (TEST_JOB) : j.runLocal()  ## test local
 
     jobID = dirac.submit(j)
     id = str(jobID) + "\n"
