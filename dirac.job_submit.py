@@ -78,18 +78,18 @@ full_file_paths = get_filepaths(path)
 input_files = full_file_paths
 
 ## read the args for job range
-if (len(sys.argv) == 3) : arg2 = sys.argv[2]
+if (len(sys.argv) == 3) : arg2 = int(sys.argv[2])
 
 if (len(sys.argv) == 4) :
-    arg2 = sys.argv[2]
-    arg3 = sys.argv[3]
+    arg2 = int(sys.argv[2])
+    arg3 = int(sys.argv[3])
     if (arg3 < arg2) :
         # protection in case that last nindex in range is lower than the first
         print ('WARNING !!!! :: second element in range smaller than the end element of range! setting arg3 = arg2 + 1')
         arg3 = arg2 + 1
 
-first_job = 1
-last_job = len(full_file_paths)
+first_job = int(1)
+last_job = int(len(full_file_paths))
 
 if (arg2 > 0) : first_job = arg2
 if (arg3 > 0) : last_job = arg3
