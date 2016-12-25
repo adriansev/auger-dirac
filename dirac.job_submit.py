@@ -46,10 +46,12 @@ site_lcg = "prague_cesnet_lcg2"
 site_dirac_cesnet = "LCG.CESNET.cz"
 site_dirac_iss = "LCG.ROISS.ro"
 
+cluster1 = site_dirac_iss + " " + site_dirac_cesnet
+
 ##################################
 # DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
 se = se_dirac_iss
-site_dirac = site_dirac_iss
+site_dirac = cluster1
 
 ## printer
 pp = pprint.PrettyPrinter(indent=4)
