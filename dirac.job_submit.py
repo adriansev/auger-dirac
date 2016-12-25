@@ -80,6 +80,7 @@ if (len(sys.argv) < 2) :
     sys.exit(os.EX_USAGE)
 
 path = sys.argv[1]
+PROD_NAME = os.path.basename(os.path.normpath(path))
 
 print ("Input directory: '{0}'".format(path))
 
@@ -177,9 +178,9 @@ for input_file in input_files[int(first_job):int(last_job)]:
     print output_files
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
-    # outdir = grid_basedir_output + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    # outdir = "/" + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    outdir = "/" + path + "/" + str(e_min) + "/" + str(theta_min) + "/" + str(prmpar) + "/" + str(runnr)
+    # outdir = grid_basedir_output + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
+    # outdir = "/" + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
+    outdir = "/" + PROD_NAME + "/" + str(e_min) + "/" + str(theta_min) + "/" + str(prmpar) + "/" + str(runnr)
 
     ### ALWAYS, INFO, VERBOSE, WARN, DEBUG
     j.setLogLevel('debug')
