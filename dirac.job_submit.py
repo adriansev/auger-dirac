@@ -11,7 +11,7 @@ from DIRAC.Interfaces.API.Dirac import Dirac
 ###   STEERING VARIABLES
 ##################################
 
-TEST_JOB = True
+TEST_JOB = False
 
 USE_DIRAC_CE_SE = 0
 
@@ -38,20 +38,19 @@ ce1 = "cream1.grid.cesnet.cz"
 ce2 = "cream2.grid.cesnet.cz"
 ce3 = "cream1.farm.particle.cz"
 
-se_dpm1    = "dpm1.egee.cesnet.cz"
 se_dirac_cesnet  = "CESNET-disk"
 se_dirac_iss = "ROISS-disk"
 
-site_lcg = "prague_cesnet_lcg2"
 site_dirac_cesnet = "LCG.CESNET.cz"
 site_dirac_iss = "LCG.ROISS.ro"
-
-cluster1 = site_dirac_iss + " " + site_dirac_cesnet
 
 ##################################
 # DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
 se = se_dirac_iss
-site_dirac = cluster1
+
+site_dirac = []
+site_dirac.append(site_dirac_iss)
+site_dirac.append(site_dirac_cesnet)
 
 ## printer
 pp = pprint.PrettyPrinter(indent=4)
