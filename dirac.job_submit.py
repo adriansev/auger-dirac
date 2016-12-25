@@ -11,7 +11,7 @@ from DIRAC.Interfaces.API.Dirac import Dirac
 ###   STEERING VARIABLES
 ##################################
 
-TEST_JOB = False
+TEST_JOB = True
 
 USE_DIRAC_CE_SE = 0
 
@@ -148,10 +148,22 @@ for input_file in input_files[int(first_job):int(last_job)]:
     input_file_base = os.path.basename(input_file)
 
     ## prepare the list of output files
-    run_log = input_file_base + ".log"
-    dat = input_file_base.replace('aug', 'DAT')
-    datlong = dat + ".long"
-    output_files = [run_log, 'fluka11.out', 'fluka15.err', dat, datlong ]
+    run_log = input_file_base + ".log" ## Name of log file based on input file name
+    dat = input_file_base.replace('aug', 'DAT') ## final name of data file based on input file name
+    datlong = dat + ".long" ## name of long files based on input file name
+
+    ## colection of log files
+    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err', datlong ]
+    log_files = " ".join(log_files_list) ## convert list to string
+    log_compress_args = "logs.tar.bz2" + " " + log_files ## more log files can be added
+
+    ## collection of data file(s)
+    dat_compressed = dat + ".tar.bz2"
+    data_files_list = [ dat_compressed ]
+    data_files = " ".join(data_files_list) ## convert list to string
+    data_compress_args = dat_compressed + " " + dat ## more data files can be added
+
+    output_files = [ data_files, 'logs.tar.bz2' ]
     print output_files
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
@@ -178,7 +190,12 @@ for input_file in input_files[int(first_job):int(last_job)]:
     ### run simulation
     j.setExecutable( './execsim',logFile='cmd_logs.log')
 
-    ###j.setOutputSandbox(output_files)
+    ## compress logs/secondary files in a single archive
+    j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = log_compress_args, logFile='cmd_logs.log')
+
+    ## compress the data file(s)
+    j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = data_compress_args, logFile='cmd_logs.log')
+
     j.setOutputData(output_files, outputSE=se, outputPath=outdir)
 
     print output_files
