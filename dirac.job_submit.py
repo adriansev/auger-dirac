@@ -1,5 +1,5 @@
 #!/bin/env python
-import os,re,sys,argparse
+import os,re,sys,argparse,pprint
 
 from DIRAC.Core.Base import Script
 Script.parseCommandLine()
@@ -20,6 +20,13 @@ JOB_CPUTIME = 345600
 JOB_NAME = 'AUGER test simulation'
 
 ##################################
+##################################
+
+prod_path = "/auger/prod/"
+user_path = "/auger/user/a/asevcenc/"
+
+base_output_path = user_path
+
 ##################################
 
 ## this corsika versions will be used from CVMFS
@@ -43,6 +50,9 @@ site_dirac_iss = "LCG.ROISS.ro"
 # DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
 se = se_dirac_iss
 site_dirac = site_dirac_iss
+
+## printer
+pp = pprint.PrettyPrinter(indent=4)
 
 ########################################################################################
 ########################################################################################
@@ -168,8 +178,8 @@ for input_file in input_files[int(first_job):int(last_job)]:
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    outdir = "/" + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
-    print outdir
+    # outdir = "/" + path + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
+    outdir = "/" + path + "/" + str(e_min) + "/" + str(theta_min) + "/" + str(prmpar) + "/" + str(runnr)
 
     ### ALWAYS, INFO, VERBOSE, WARN, DEBUG
     j.setLogLevel('debug')
@@ -196,10 +206,14 @@ for input_file in input_files[int(first_job):int(last_job)]:
     ## compress the data file(s)
     j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = data_compress_args, logFile='cmd_logs.log')
 
-    j.setOutputData(output_files, outputSE=se, outputPath=outdir)
+    lfns_list = []
+    for f in output_files:
+        lfn = base_output_path + outdir + "/" + f
+        lfns_list.append(lfn)
 
-    print output_files
-    print outdir
+    j.setOutputData(lfns_list, outputSE=se)
+
+    pp.pprint (lfns_list)
     print site_dirac
     print se
 
