@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ -z "$1" ]] && echo "Must take as argument a DIRAC DFC directory" && exit 1
+
 BASEDIR=$1
 TMP="dir_list.tmp"
 TMP2="dir_list2.tmp"
