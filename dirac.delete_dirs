@@ -1,0 +1,32 @@
+#!/bin/bash
+
+BASEDIR=$1
+TMP="dir_list.tmp"
+TMP2="dir_list2.tmp"
+
+delete_temps () {
+    rm -f ${TMP} ${TMP2} 
+    [[ ! -s ${LFN_LIST_NAME} ]] && rm -f ${LFN_LIST_NAME}
+}
+
+
+[[ ${BASEDIR:$((${#BASEDIR}-1)):1} != "/" ]] && BASEDIR="${BASEDIR}/"
+
+LFN_LIST_NAME="$(echo ${BASEDIR} | sed 's#^\/##; s#\/$##; s#\/#-#g').lfns"
+##echo "${LFN_LIST_NAME}"
+
+dirac-dms-user-lfns -b ${BASEDIR} > "${TMP}"  ## get directory lists and automaticaly the file list in .lfns file
+[[ -s "${LFN_LIST_NAME}" ]] && echo "Directory hierarchy have files! See the ${LFN_LIST_NAME} list and use : dirac-dms-remove-files ${LFN_LIST_NAME}" && exit 1
+
+grep ${BASEDIR} ${TMP} | awk -F":" '{print $1}' | sort -r > "${TMP2}" ## sort the directory list in order to delete longest paths first
+
+if [[ ! -e "${TMP2}" || ! -s "${TMP2}" ]] ; then 
+    echo "No ${TMP2} file or 0 size. Exiting.." 
+    delete_temps
+    exit 1
+fi
+
+xargs -a ${TMP2} -n 50 drmdir
+
+delete_temps
+
