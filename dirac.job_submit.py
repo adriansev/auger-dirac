@@ -165,7 +165,7 @@ for input_file in input_files[int(first_job):int(last_job)]:
     datlong = dat + ".long" ## name of long files based on input file name
 
     ## colection of log files
-    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err', datlong, input_file ]
+    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err', datlong, input_file_base ]
     log_files = " ".join(log_files_list) ## convert list to string
     log_compress_args = "logs.tar.bz2" + " " + log_files ## more log files can be added
 
