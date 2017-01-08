@@ -78,6 +78,7 @@ if (len(sys.argv) < 2) :
     print ('the input directory should be specified')
     print ('if existent the 2nd argument (int) will be taken as index of the first job (inclusive)')
     print ('if existent the 3rd argument (int) will be taken as index of the last job (inclusive)')
+    print ('make both arguments equal to send a single job with the index of arguments')
     sys.exit(os.EX_USAGE)
 
 path = sys.argv[1]
@@ -90,24 +91,26 @@ full_file_paths = get_filepaths(path)
 input_files = full_file_paths
 
 ## read the args for job range
-if (len(sys.argv) == 3) : arg2 = int(sys.argv[2])
-
-if (len(sys.argv) == 4) :
+if (len(sys.argv) >= 3) :
     arg2 = int(sys.argv[2])
+    arg2 = max(arg2, 0) # if negative use 0
+
+if (len(sys.argv) >= 4) :
     arg3 = int(sys.argv[3])
+    arg3 = max(arg3, 0) # if negative use 0
     if (arg3 < arg2) :
-        # protection in case that last nindex in range is lower than the first
-        print ('WARNING !!!! :: second element in range smaller than the end element of range! setting arg3 = arg2 + 1')
+        # protection in case that last index in range is lower than the first
+        print ('WARNING !!!! :: second element in range smaller than the end element of range! setting arg3 = arg2')
         arg3 = arg2 + 1
 
-first_job = int(1)
+first_job = int(0)
 last_job = int(len(full_file_paths))
 
-if (arg2 > 0) : first_job = arg2
-if (arg3 > 0) : last_job = arg3
+if (arg2 > 0) : first_job = arg2 - 1 # first file corespond to index 0
+if (arg3 > 0) : last_job = arg3 # last index is array lenght - not included in loop
 
 ##  MAIN LOOP OVER ALL INPUT FILES
-for input_file in input_files[int(first_job):int(last_job)]:
+for input_file in input_files[int(first_job):int(last_job)] :
 #    print "Input file is : {}".format(input_file)
     print '\nInput file is : ', input_file
 
