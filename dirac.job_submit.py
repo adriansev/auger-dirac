@@ -176,7 +176,6 @@ for input_file in input_files[int(first_job):int(last_job)]:
     data_compress_args = dat_compressed + " " + dat ## more data files can be added
 
     output_files = [ data_files, 'logs.tar.bz2' ]
-    print output_files
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
@@ -208,16 +207,18 @@ for input_file in input_files[int(first_job):int(last_job)]:
     ## compress the data file(s)
     j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = data_compress_args, logFile='cmd_logs.log')
 
-    lfns_list = []
-    for f in output_files:
-        lfn = base_output_path + outdir + "/" + f
-        lfns_list.append(lfn)
+#    lfns_list = []
+#    for f in output_files:
+#        lfn = base_output_path + outdir + "/" + f
+#        lfns_list.append(lfn)
+#
+#    pp.pprint (lfns_list)
+#    j.setOutputData(lfns_list, outputSE=se)
 
-    j.setOutputData(lfns_list, outputSE=se)
-
-    pp.pprint (lfns_list)
-    print site_dirac
-    print se
+    print 'Output files = ', output_files
+    print 'SE = ',se
+    print 'outputPath = ', outdir
+    j.setOutputData(output_files, outputSE=se, outputPath=outdir)
 
     if (TEST_JOB) : j.runLocal()  ## test local
 
