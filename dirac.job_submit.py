@@ -189,7 +189,10 @@ for input_file in input_files[int(first_job):int(last_job)] :
     j.setLogLevel('debug')
 
     j.setDestination(site_dirac)
+
+    JOB_NAME=PROD_NAME
     j.setName(JOB_NAME)
+
     j.setCPUTime(JOB_CPUTIME) ## 4 days
 
     ### download the script for preparing corsika input file for usage with cvmfs
