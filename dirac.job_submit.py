@@ -170,15 +170,15 @@ for input_file in input_files[int(first_job):int(last_job)] :
     ## colection of log files
     log_files_list = [ run_log, 'fluka11.out', 'fluka15.err', datlong, input_file_base ]
     log_files = " ".join(log_files_list) ## convert list to string
-    log_compress_args = "logs.tar.bz2" + " " + log_files ## more log files can be added
+    log_compress_args = "logs.tar.gz" + " " + log_files ## more log files can be added
 
     ## collection of data file(s)
-    dat_compressed = dat + ".tar.bz2"
+    dat_compressed = dat + ".tar.gz"
     data_files_list = [ dat_compressed ]
     data_files = " ".join(data_files_list) ## convert list to string
     data_compress_args = dat_compressed + " " + dat ## more data files can be added
 
-    output_files = [ data_files, 'logs.tar.bz2' ]
+    output_files = [ data_files, 'logs.tar.gz' ]
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
@@ -208,10 +208,10 @@ for input_file in input_files[int(first_job):int(last_job)] :
     j.setExecutable( './execsim',logFile='cmd_logs.log')
 
     ## compress logs/secondary files in a single archive
-    j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = log_compress_args, logFile='cmd_logs.log')
+    j.setExecutable( 'tar -cvzf ', arguments = log_compress_args, logFile='cmd_logs.log')
 
     ## compress the data file(s)
-    j.setExecutable( 'BZIP2="-6" tar -cvjf ', arguments = data_compress_args, logFile='cmd_logs.log')
+    j.setExecutable( 'tar -cvzf ', arguments = data_compress_args, logFile='cmd_logs.log')
 
 #    lfns_list = []
 #    for f in output_files:
