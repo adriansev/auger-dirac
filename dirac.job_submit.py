@@ -110,8 +110,9 @@ if (arg2 > 0) : first_job = arg2 - 1 # first file corespond to index 0
 if (arg3 > 0) : last_job = arg3 # last index is array lenght - not included in loop
 
 ##  MAIN LOOP OVER ALL INPUT FILES
-for input_file in input_files[int(first_job):int(last_job)] :
+for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
 #    print "Input file is : {}".format(input_file)
+
     print '\nInput file is : ', input_file
 
     ## GET RUN NUMBER FROM INPUT FILE
@@ -190,7 +191,10 @@ for input_file in input_files[int(first_job):int(last_job)] :
 
     j.setDestination(site_dirac)
 
-    JOB_NAME=PROD_NAME
+    JOB_IDX = first_job + 1 + idx
+    JOB_NAME = PROD_NAME + " IDX_" + str(JOB_IDX)
+    print '\nJOB NAME is : ', JOB_NAME
+
     j.setName(JOB_NAME)
 
     j.setCPUTime(JOB_CPUTIME) ## 4 days
