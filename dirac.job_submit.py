@@ -11,13 +11,13 @@ from DIRAC.Interfaces.API.Dirac import Dirac
 ###   STEERING VARIABLES
 ##################################
 
-TEST_JOB = False
+TEST_JOB = 0
 
 USE_DIRAC_CE_SE = 0
 
-JOB_CPUTIME = 345600
+JOB_CPUTIME = 432000
 
-JOB_NAME = 'AUGER test simulation'
+JOB_NAME = 'AUGER simulation'
 
 ##################################
 ##################################
@@ -169,17 +169,17 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     datlong = dat + ".long" ## name of long files based on input file name
 
     ## colection of log files
-    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err', datlong, input_file_base ]
+    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err',  input_file_base ]
     log_files = " ".join(log_files_list) ## convert list to string
     log_compress_args = "logs.tar.gz" + " " + log_files ## more log files can be added
 
     ## collection of data file(s)
     dat_compressed = dat + ".tar.gz"
-    data_files_list = [ dat_compressed ]
+    data_files_list = [ dat, datlong ]
     data_files = " ".join(data_files_list) ## convert list to string
-    data_compress_args = dat_compressed + " " + dat ## more data files can be added
+    data_compress_args = dat_compressed + " " + data_files ## more data files can be added
 
-    output_files = [ data_files, 'logs.tar.gz' ]
+    output_files = [ dat_compressed, 'logs.tar.gz' ]
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
@@ -230,9 +230,11 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     print 'outputPath = ', outdir
     j.setOutputData(output_files, outputSE=se, outputPath=outdir)
 
-    if (TEST_JOB) : j.runLocal()  ## test local
+    if (TEST_JOB) :
+        jobID = dirac.submit(j,mode='local')
+    else :
+        jobID = dirac.submit(j)
 
-    jobID = dirac.submit(j)
     id = str(jobID) + "\n"
     print 'Submission Result: ',jobID
     with open('jobids.list', 'a') as f_id_log:
