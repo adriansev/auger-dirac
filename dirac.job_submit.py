@@ -1,15 +1,10 @@
 #!/bin/env python
-import os,re,sys,argparse,pprint
-
-from DIRAC.Core.Base import Script
-Script.parseCommandLine()
-
-from DIRAC.Interfaces.API.Job import Job
-from DIRAC.Interfaces.API.Dirac import Dirac
 
 ##################################
 ###   STEERING VARIABLES
 ##################################
+
+DO_NOT_SUBMIT = 0
 
 TEST_JOB = 0
 
@@ -18,14 +13,6 @@ USE_DIRAC_CE_SE = 0
 JOB_CPUTIME = 432000
 
 JOB_NAME = 'AUGER simulation'
-
-##################################
-##################################
-
-prod_path = "/auger/prod/"
-user_path = "/auger/user/a/asevcenc/"
-
-base_output_path = user_path
 
 ##################################
 
@@ -52,8 +39,73 @@ site_dirac = []
 site_dirac.append(site_dirac_iss)
 site_dirac.append(site_dirac_cesnet)
 
+##################################
+##################################
+import os,re,sys,pprint
+
+from DIRAC.Core.Base import Script
+from COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import ConfigCache
+
+Script.parseCommandLine()
+
+from DIRAC.Interfaces.API.Job import Job
+from DIRAC.Interfaces.API.Dirac import Dirac
+
+import DIRAC.Core.Security.ProxyInfo as ProxyInfo
+
+import DIRAC.FrameworkSystem.Client.ProxyGeneration as ProxyGeneration
+
+from DIRAC.Core.Security import Locations, VOMS
+from DIRAC.Core.Utilities.PrettyPrint import printTable
+
+##################################
+##################################
+
+## Current pwd
+session = DSession()
+PWD = session.getCwd( )
+
 ## printer
 pp = pprint.PrettyPrinter(indent=4)
+
+## PROXY MANAGEMENT STUFF - before anything else
+def _getProxyLocation():
+  return Locations.getProxyLocation()
+
+def _getProxyInfo( proxyPath = False ):
+    if not proxyPath:
+        proxyPath = _getProxyLocation()
+    proxy_info = ProxyInfo.getProxyInfo( proxyPath, False )
+    return proxy_info
+
+proxy_info = _getProxyInfo()
+if not proxy_info[ "OK" ]:
+    print proxy_info[ "Message" ]
+    sys.exit(os.EX_USAGE)
+
+proxy_content_info = proxy_info[ "Value" ]
+group = proxy_content_info["group"]
+
+if ( group == "auger_prod"  ):
+    print("user role : prod")
+elif ( group == "auger_user"):
+    print("user role : user")
+else:
+    print ("unknown role (not auger_prod nor auger_user) -> exiting..")
+    sys.exit(os.EX_USAGE)
+
+##################################
+##################################
+## Set base directory for storage of output files based on user role
+
+prod_path = "/auger/prod"
+base_output_path = ""
+
+if ( group == "auger_prod"  ):
+    base_output_path = prod_path
+else:
+    base_output_path = PWD
 
 ########################################################################################
 ########################################################################################
@@ -186,6 +238,26 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     # outdir = "/" + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
     outdir = "/" + PROD_NAME + "/" + str(e_min) + "/" + str(theta_min) + "/" + str(prmpar) + "/" + str(runnr)
 
+    ## add base directory to each file to have a list of lfns
+    lfns_list = []
+    for f in output_files:
+        lfn = base_output_path + outdir + "/" + f
+        lfns_list.append(lfn)
+
+    print 'Output files = ', output_files
+    print 'SE = ',se
+    print 'outputPath = ', outdir
+    pp.pprint (lfns_list)
+
+    j.setOutputData(lfns_list, outputSE=se)
+
+
+#####################
+##   PREPARE JOB   ##
+#####################
+    if (DO_NOT_SUBMIT):
+        sys.exit(os.EX_USAGE)
+
     ### ALWAYS, INFO, VERBOSE, WARN, DEBUG
     j.setLogLevel('debug')
 
@@ -196,7 +268,6 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     print '\nJOB NAME is : ', JOB_NAME
 
     j.setName(JOB_NAME)
-
     j.setCPUTime(JOB_CPUTIME) ## 4 days
 
     ### download the script for preparing corsika input file for usage with cvmfs
@@ -216,19 +287,6 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
 
     ## compress the data file(s)
     j.setExecutable( 'tar -cvzf ', arguments = data_compress_args, logFile='cmd_logs.log')
-
-#    lfns_list = []
-#    for f in output_files:
-#        lfn = base_output_path + outdir + "/" + f
-#        lfns_list.append(lfn)
-#
-#    pp.pprint (lfns_list)
-#    j.setOutputData(lfns_list, outputSE=se)
-
-    print 'Output files = ', output_files
-    print 'SE = ',se
-    print 'outputPath = ', outdir
-    j.setOutputData(output_files, outputSE=se, outputPath=outdir)
 
     if (TEST_JOB) :
         jobID = dirac.submit(j,mode='local')
