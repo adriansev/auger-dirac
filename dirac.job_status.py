@@ -13,7 +13,8 @@ jobid = sys.argv[1]
 
 print dirac.status(jobid)
 
-dirac.getJobSummary(jobid, outputFile=None, printOutput=True)
+summary_file = str(jobid) + "_summary.txt"
+dirac.getJobSummary(jobid, outputFile=summary_file, printOutput=True)
 
 print dirac.getJobDebugOutput(jobid)
 
