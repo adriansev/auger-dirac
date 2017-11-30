@@ -34,6 +34,7 @@ site_dirac_iss = "LCG.ROISS.ro"
 ##################################
 # DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
 se = se_dirac_iss
+#se = ""
 
 site_dirac = []
 site_dirac.append(site_dirac_iss)
@@ -238,18 +239,24 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     # outdir = "/" + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
     outdir = "/" + PROD_NAME + "/" + str(e_min) + "/" + str(theta_min) + "/" + str(prmpar) + "/" + str(runnr)
 
-    ## add base directory to each file to have a list of lfns
-    lfns_list = []
-    for f in output_files:
-        lfn = base_output_path + outdir + "/" + f
-        lfns_list.append(lfn)
-
-    print 'Output files = ', output_files
     print 'SE = ',se
-    print 'outputPath = ', outdir
-    pp.pprint (lfns_list)
 
-    j.setOutputData(lfns_list, outputSE=se)
+    lfns_list = []
+    if ( group == "auger_prod"  ):
+        base_output_path = prod_path
+        ## add base directory to each file to have a list of lfns
+        for f in output_files:
+            lfn = base_output_path + outdir + "/" + f
+            lfns_list.append(lfn)
+
+        j.setOutputData(lfns_list, outputSE=se)
+        print 'Output - list of lfns :'
+        pp.pprint (lfns_list)
+    else:
+##        base_output_path = PWD
+        j.setOutputData(output_files, outputSE=se, outputPath=outdir)
+        print 'Output files = ', output_files
+        print 'outputPath = ', outdir
 
 
 #####################
