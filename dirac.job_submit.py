@@ -246,7 +246,7 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
         base_output_path = prod_path
         ## add base directory to each file to have a list of lfns
         for f in output_files:
-            lfn = base_output_path + outdir + "/" + f
+            lfn = "LFN:" + base_output_path + outdir + "/" + f
             lfns_list.append(lfn)
 
         j.setOutputData(lfns_list, outputSE=se)

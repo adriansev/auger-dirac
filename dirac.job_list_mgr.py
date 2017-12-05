@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import re,sys,json
+import os,re,sys,json,argparse,pprint
 from StringIO import StringIO
 
 from DIRAC.Core.Base import Script
