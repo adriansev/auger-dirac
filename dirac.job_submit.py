@@ -131,7 +131,10 @@ if (len(sys.argv) < 2) :
     print ('the input directory should be specified')
     print ('if existent the 2nd argument (int) will be taken as index of the first job (inclusive)')
     print ('if existent the 3rd argument (int) will be taken as index of the last job (inclusive)')
+    print ('example : ./dirac.job_submit.py <directory_with_corsika_files> <from_index> <to_index>')
+    print ('example : ./dirac.job_submit.py ContpFeHeNQGSJETII4_20180417 1 500')
     print ('make both arguments equal to send a single job with the index of arguments')
+
     sys.exit(os.EX_USAGE)
 
 path = sys.argv[1]
