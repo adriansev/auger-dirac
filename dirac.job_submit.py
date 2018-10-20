@@ -3,19 +3,13 @@
 ##################################
 ###   STEERING VARIABLES
 ##################################
-
 DO_NOT_SUBMIT = 0
-
 TEST_JOB = 0
-
 USE_DIRAC_CE_SE = 0
-
 JOB_CPUTIME = 432000
-
 JOB_NAME = 'AUGER simulation'
 
 ##################################
-
 ## this corsika versions will be used from CVMFS
 #corsika_version = "corsika-76400_p1"
 #corsika_bin = "corsika76400Linux_QGSII_fluka_thin"
@@ -37,7 +31,6 @@ site_dirac_iss = "LCG.ROISS.ro"
 ##################################
 # DEFINE WHERE THE JOB WILL BE RUN AND WHERE THE DATA WILL BE STORED
 se = se_dirac_iss
-#se = ""
 
 site_dirac = []
 site_dirac.append(site_dirac_iss)
@@ -65,7 +58,6 @@ from DIRAC.Core.Utilities.PrettyPrint import printTable
 
 ##################################
 ##################################
-
 ## Current pwd
 session = DSession()
 PWD = session.getCwd( )
@@ -220,8 +212,6 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
 
     input_files_list = []
     input_files_list.append(input_file)
-    input_files_list.append('run_corsika_sim')
-
     j.setInputSandbox(input_files_list)
     input_file_base = os.path.basename(input_file)
 
