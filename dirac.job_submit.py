@@ -17,6 +17,9 @@ JOB_NAME = 'AUGER simulation'
 ##################################
 
 ## this corsika versions will be used from CVMFS
+#corsika_version = "corsika-76400_p1"
+#corsika_bin = "corsika76400Linux_QGSII_fluka_thin"
+
 corsika_version = "CORSIKA-74100_Fluka.2011.2c.2"
 corsika_bin = "corsika74100Linux_QGSII_fluka_thin"
 
@@ -38,7 +41,7 @@ se = se_dirac_iss
 
 site_dirac = []
 site_dirac.append(site_dirac_iss)
-site_dirac.append(site_dirac_cesnet)
+##site_dirac.append(site_dirac_cesnet)
 
 ##################################
 ##################################
@@ -168,7 +171,6 @@ if (arg3 > 0) : last_job = arg3 # last index is array lenght - not included in l
 ##  MAIN LOOP OVER ALL INPUT FILES
 for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
 #    print "Input file is : {}".format(input_file)
-
     print '\nInput file is : ', input_file
 
     ## GET RUN NUMBER FROM INPUT FILE
@@ -216,26 +218,15 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     dirac = Dirac(withRepo=True, repoLocation='jobid.list', useCertificates=False)
     j = Job(script=None, stdout='submission.out', stderr='submission.err')
 
-    j.setInputSandbox(input_file)
+    input_files_list = []
+    input_files_list.append(input_file)
+    input_files_list.append('run_corsika_sim')
+
+    j.setInputSandbox(input_files_list)
     input_file_base = os.path.basename(input_file)
 
-    ## prepare the list of output files
-    run_log = input_file_base + ".log" ## Name of log file based on input file name
-    dat = input_file_base.replace('aug', 'DAT') ## final name of data file based on input file name
-    datlong = dat + ".long" ## name of long files based on input file name
-
-    ## colection of log files
-    log_files_list = [ run_log, 'fluka11.out', 'fluka15.err',  input_file_base ]
-    log_files = " ".join(log_files_list) ## convert list to string
-    log_compress_args = "logs.tar.gz" + " " + log_files ## more log files can be added
-
-    ## collection of data file(s)
-    dat_compressed = dat + ".tar.gz"
-    data_files_list = [ dat, datlong ]
-    data_files = " ".join(data_files_list) ## convert list to string
-    data_compress_args = dat_compressed + " " + data_files ## more data files can be added
-
-    output_files = [ dat_compressed, 'logs.tar.gz' ]
+    # set the list of output files
+    output_files = [ 'data.tar.gz', 'logs.tar.gz' ]
 
     ## prepare the output location in GRID storage; the input path will be the used also for GRID storage
     # outdir = grid_basedir_output + PROD_NAME + "/" + str(e_min) + "_" + str(e_max) + "/" + str(theta_min) + "_" + str(theta_max) + "/" + str(prmpar) + "/" + str(runnr)
@@ -261,7 +252,6 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
         print 'Output files = ', output_files
         print 'outputPath = ', outdir
 
-
 #####################
 ##   PREPARE JOB   ##
 #####################
@@ -280,23 +270,8 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     j.setName(JOB_NAME)
     j.setCPUTime(JOB_CPUTIME) ## 4 days
 
-    ### download the script for preparing corsika input file for usage with cvmfs
-###    j.setExecutable( 'curl', arguments = ' -fsSLkO https://raw.githubusercontent.com/adriansev/auger-dirac/master/make_run4cvmfs',logFile='cmd_logs.log')
-###    j.setExecutable( 'chmod', arguments = ' +x make_run4cvmfs',logFile='cmd_logs.log')
-
-    ### create the simulation script configured for use with cvmfs
-    ### set the make_run4cvmfs arguments to include the corsika_version and corsika_bin
-    make_run4cvmfs_arg = input_file_base + " " + corsika_version + " " + corsika_bin
-    j.setExecutable( '/cvmfs/auger.egi.eu/utils/make_run4cvmfs', arguments = make_run4cvmfs_arg, logFile='cmd_logs.log')
-
-    ### run simulation
-    j.setExecutable( './execsim',logFile='cmd_logs.log')
-
-    ## compress logs/secondary files in a single archive
-    j.setExecutable( 'tar -cvzf ', arguments = log_compress_args, logFile='cmd_logs.log')
-
-    ## compress the data file(s)
-    j.setExecutable( 'tar -cvzf ', arguments = data_compress_args, logFile='cmd_logs.log')
+    run_corsika_sim_args = input_file_base + " " + corsika_version + " " + corsika_bin
+    j.setExecutable( './run_corsika_sim', arguments = run_corsika_sim_args, logFile='run_sim.log')
 
     if (TEST_JOB) :
         jobID = dirac.submit(j,mode='local')

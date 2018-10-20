@@ -1,0 +1,30 @@
+#!/bin/bash
+
+INPUT="${1}"
+[[ -z "${INPUT}" ]] && { echo "An argument specifying the corsika input card is needed"; exit 1; }
+
+CORSIKAVER_DEFAULT="CORSIKA-74100_Fluka.2011.2c.2"
+CORSIKABIN_DEFAULT="corsika74100Linux_QGSII_fluka_thin"
+
+CORSIKAVER=${2:-$CORSIKAVER_DEFAULT}
+CORSIKABIN=${3:-$CORSIKABIN_DEFAULT}
+
+# prepare execsim script
+/cvmfs/auger.egi.eu/utils/make_run4cvmfs "${INPUT}" "${CORSIKAVER}" "${CORSIKABIN}" 2>&1
+
+# cleanup input card
+sed -i '/CORECUT/d' "${INPUT}" 2>&1
+
+# start corsika simulation
+./execsim || { echo "execsim returned an error"; exit 1; }
+
+# output file have the name of input file but with aug replaced
+DATAOUT=$(sed 's/aug/DAT/' <<< "${INPUT}")
+
+LOGFILES="${INPUT} ${INPUT}.log fluka11.out fluka15.err"
+echo "Compress logs/misc files"
+tar --remove-files -cvzf logs.tar.gz ${LOGFILES} 2>&1 && echo "Done" || echo "Something went wrong"
+
+echo "Compress data files"
+tar --remove-files -cvzf data.tar.gz  ${DATAOUT}*  2>&1 && echo "Done" || echo "Something went wrong"
+
