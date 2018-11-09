@@ -1,0 +1,6 @@
+## Structure of task definition
+# <Task/Director name>      <Input path/file name>    <Input file type>  <Output path/file name>    <Output file type>  <List of exporter properties id=on|off >
+
+HdSimulation                        DATFILE                 CORSIKA     ../TASK1_OUTPUT.root    Offline     FDRaw=on    FDSimTraces=off     FDSimTelescope=off      SDSimPEHisto=off    SDSimPMTBaseHisto=off   SDSimPMTFilterHisto=off     SDSimTankParticles=off
+HdInfillSimulationReconstruction    ../TASK1_OUTPUT.root    Offline     ../TASK2_OUTPUT.root    Offline     FDRaw=on    FDSimTraces=off     FDSimTelescope=off      SDSimPEHisto=off    SDSimPMTBaseHisto=off   SDSimPMTFilterHisto=off     SDSimTankParticles=off
+

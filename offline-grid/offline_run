@@ -1,0 +1,75 @@
+#!/bin/bash
+
+DEF="task_list_definition"
+[[ ! -e "${DEF}" ]] && { echo "Configuration file ${DEF} for definition of IO endpoints is needed"; exit 1; }
+
+WORKDIR=$(pwd)
+#################
+# prepare usage of AUGER offline
+OS="el6"
+MAJOR_VER=$( awk -F: '{split($5,ver,"."); print ver[1];}' /etc/system-release-cpe ) #'
+[[ "${MAJOR_VER}" == "7" ]] && OS="el7"
+
+OFFLINE_VER="offline-v3r3"
+OFFLINE_PATH="/cvmfs/auger.egi.eu/${OS}/${OFFLINE_VER}/"
+
+APPS_DIR="${OFFLINE_PATH}/apps-current"
+source "${OFFLINE_PATH}/setup.sh"
+
+## PREPARE DATA
+[[ -L DATFILE ]] && rm -rf DATFILE
+CORSIKA_FILE=$(find . -name "DAT*" -not -name "*.long" -printf "%f\n")
+[[ -z "${CORSIKA_FILE}" ]] && tar -xvf data.tar.gz
+CORSIKA_FILE=$(find . -name "DAT*" -not -name "*.long" -printf "%f\n")
+[[ -z "${CORSIKA_FILE}" ]] && { echo "No Corsika DAT file found" ; exit 1; }
+ln -s "${CORSIKA_FILE}" DATFILE
+
+## Start customization of Input/Output files
+TASK_LIST=""
+
+while read -a LINE ; do
+    [[ "${LINE}" =~ ^#.*$ ]] && continue
+    [[ -z "${LINE}" ]] && continue
+    set -- "${LINE[@]}"
+
+    TASK=$1; shift;
+    INPUT_FILE=$1 ; shift;
+    INPUT_TYPE=$1 ; shift;
+    OUTPUT_FILE=$1 ; shift;
+    OUTPUT_TYPE=$1 ; shift;
+    eval "${@}"
+
+    # get tasks software from AUGER offline from cvmfs
+    [[ -e "${TASK}" ]] && rm -rf ${TASK}
+    cp -rf "${APPS_DIR}/${TASK}" .
+    TASK_LIST="${TASK_LIST} ${TASK}"
+
+    xmlstarlet ed -L \
+    -u "/EventFileReader/InputFilenames"    -v "${INPUT_FILE}" \
+    -u "/EventFileReader/InputFileType"     -v "${INPUT_TYPE}" \
+    ${TASK}/EventFileReader.xml
+
+    xmlstarlet ed -L \
+    -u "/EventFileExporter/OutputFilename"  -v "${OUTPUT_FILE}" \
+    -u "/EventFileExporter/OutputFileType"  -v "${OUTPUT_TYPE}" \
+    ${TASK}/EventFileExporter.xml
+
+    xmlstarlet ed -L \
+    -u "/EventFileExporter/StreamerSwitches/FDRaw"               -v "${FDRaw}"  \
+    -u "/EventFileExporter/StreamerSwitches/FDSimTraces"         -v "${FDSimTraces}" \
+    -u "/EventFileExporter/StreamerSwitches/FDSimTelescope"      -v "${FDSimTelescope}" \
+    -u "/EventFileExporter/StreamerSwitches/SDSimPEHisto"        -v "${SDSimPEHisto}" \
+    -u "/EventFileExporter/StreamerSwitches/SDSimPMTBaseHisto"   -v "${SDSimPMTBaseHisto}" \
+    -u "/EventFileExporter/StreamerSwitches/SDSimPMTFilterHisto" -v "${SDSimPMTFilterHisto}" \
+    -u "/EventFileExporter/StreamerSwitches/SDSimTankParticles"  -v "${SDSimTankParticles}" \
+    ${TASK}/EventFileExporter.xml
+
+echo
+done < "${DEF}"
+
+for t in ${TASK_LIST[@]}; do
+    cd ${t}
+    ./userAugerOffline &>> ../offline.out || { cd ${WORKDIR}; echo "TASK >> ${t}  << : An error was encountered during processing. Lets exit!" ; exit 1; }
+    cd ${WORKDIR}
+done
+
