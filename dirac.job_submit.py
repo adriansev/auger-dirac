@@ -264,9 +264,9 @@ for idx, input_file in enumerate ( input_files[int(first_job):int(last_job)] ) :
     j.setExecutable( './run_corsika_sim', arguments = run_corsika_sim_args, logFile='run_sim.log')
 
     if (TEST_JOB) :
-        jobID = dirac.submit(j,mode='local')
+        jobID = dirac.submitJob(j,mode='local')
     else :
-        jobID = dirac.submit(j)
+        jobID = dirac.submitJob(j)
 
     id = str(jobID) + "\n"
     print 'Submission Result: ',jobID
